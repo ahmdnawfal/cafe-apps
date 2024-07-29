@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  image             String
+  category          String
+  description       String
+  price             Float
+  transactionsItems TransactionsItem[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@map("products")
+}
+
+model Transaction {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  customerName        String
+  customerEmail       String
+  customerPhone       String
+  customerTableNumber Int
+  status              payment_status
+  transactionsItems   TransactionsItem[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@map("transactions")
+}
+
+model TransactionsItem {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  quantity       Int
+  temperature    String
+  size           String
+  sugar          String
+  ice            String
+  price          Float
+  transactionsId String      @db.ObjectId
+  transactions   Transaction @relation(fields: [transactionsId], references: [id])
+  productId      String      @db.ObjectId
+  product        Product     @relation(fields: [productId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("transactionsItems")
+}
+
+enum payment_status {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
