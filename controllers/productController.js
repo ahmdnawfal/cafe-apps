@@ -1,7 +1,7 @@
 import 'express-async-errors';
 import prisma from '../lib/prisma.js';
 import { StatusCodes } from 'http-status-codes';
-import { NotFoundError, InternalServerError } from '../errors/customError.js';
+import { BadRequestError } from '../errors/customError.js';
 
 /**
  * @swagger
@@ -38,13 +38,6 @@ import { NotFoundError, InternalServerError } from '../errors/customError.js';
 
 /**
  * @swagger
- * tags:
- *   name: Product
- *   description: The products managing API
- */
-
-/**
- * @swagger
  * /api/product:
  *   get:
  *     summary: Returns the list of all the products
@@ -60,16 +53,21 @@ import { NotFoundError, InternalServerError } from '../errors/customError.js';
  *                 $ref: '#/components/schemas/Product'
  */
 
-export const getAllProduct = async (req, res) => {
+export const getAllProduct = async (req, res, next) => {
   try {
-    const response = await prisma.product.findMany({});
+    const response = await prisma.product.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
     res.status(StatusCodes.OK).json({
       status: 'OK',
+      statusCode: StatusCodes.OK,
       msg: 'SUCCESS',
       data: response,
     });
   } catch (error) {
-    throw new InternalServerError(`Internal Server Error`);
+    next(error);
   }
 };
 
@@ -93,7 +91,7 @@ export const getAllProduct = async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Product'
  */
-export const createProduct = async (req, res) => {
+export const createProduct = async (req, res, next) => {
   const data = {
     ...req.body,
   };
@@ -104,12 +102,13 @@ export const createProduct = async (req, res) => {
     });
 
     res.status(StatusCodes.CREATED).json({
-      status: 'OK',
+      status: 'Created',
+      statusCode: StatusCodes.CREATED,
       msg: 'Successfully create product',
       data: response,
     });
   } catch (error) {
-    throw new InternalServerError(`Internal Server Error`);
+    next(error);
   }
 };
 
@@ -135,7 +134,7 @@ export const createProduct = async (req, res) => {
  *               $ref: '#/components/schemas/Product'
  */
 
-export const getProductById = async (req, res) => {
+export const getProductById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -147,11 +146,16 @@ export const getProductById = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
       status: 'OK',
+      statusCode: StatusCodes.OK,
       msg: 'SUCCESS',
       data: response,
     });
   } catch (error) {
-    throw new NotFoundError(`No product with id: ${id}`);
+    if (error.meta.message.startsWith('Malformed ObjectID:')) {
+      throw new BadRequestError(`no product with id ${id}`);
+    }
+
+    next(error);
   }
 };
 
@@ -177,7 +181,7 @@ export const getProductById = async (req, res) => {
  *               $ref: '#/components/schemas/Product'
  */
 
-export const deleteProductById = async (req, res) => {
+export const deleteProductById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -188,11 +192,16 @@ export const deleteProductById = async (req, res) => {
     });
 
     res.status(StatusCodes.ACCEPTED).json({
-      status: 'OK',
+      status: 'Accepted',
+      statusCode: StatusCodes.ACCEPTED,
       msg: 'Successfully delete product',
       data: response,
     });
   } catch (error) {
-    throw new NotFoundError(`No product with id: ${id}`);
+    if (error.meta.message.startsWith('Malformed ObjectID:')) {
+      throw new BadRequestError(`no product with id ${id}`);
+    }
+
+    next(error);
   }
 };

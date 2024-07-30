@@ -36,3 +36,18 @@ export const validateProductInput = withValidationErrors([
     .isFloat()
     .withMessage('invalid price'),
 ]);
+
+export const validateRegister = withValidationErrors([
+  body('name').notEmpty().withMessage('name is required'),
+  body('email').notEmpty().withMessage('email is required'),
+  body('password').notEmpty().withMessage('password is required'),
+  body('email').isEmail().withMessage('invalid email'),
+  body('role').notEmpty().withMessage('role is required'),
+  body('role').isIn(['ADMIN', 'USER']).withMessage('invalid role'),
+]);
+
+export const validateLogin = withValidationErrors([
+  body('email').notEmpty().withMessage('email is required'),
+  body('password').notEmpty().withMessage('password is required'),
+  body('email').isEmail().withMessage('invalid email'),
+]);
