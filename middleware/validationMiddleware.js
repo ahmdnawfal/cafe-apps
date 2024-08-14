@@ -51,3 +51,13 @@ export const validateLogin = withValidationErrors([
   body('password').notEmpty().withMessage('password is required'),
   body('email').isEmail().withMessage('invalid email'),
 ]);
+
+export const validateTransaction = withValidationErrors([
+  body('products').notEmpty().withMessage('product is required'),
+  body('customerName').notEmpty().withMessage('name is required'),
+  body('customerEmail').notEmpty().withMessage('email is required'),
+  body('customerPhone').notEmpty().withMessage('phone is required'),
+  body('customerTableNumber')
+    .notEmpty()
+    .withMessage('number table is required'),
+]);
